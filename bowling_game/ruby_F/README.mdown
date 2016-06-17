@@ -1,0 +1,19 @@
+# Ruby Functional implementation
+
+Analysis of implementation
+
+## Functional Design:
+
+### Pros:
+
+- Immutability
+
+### Cons:
+
+- In my opinion harder to understand for non (functional) programmers
+
+## Padding:
+
+### Pros/Cons:
+
+- Similar to NullObject pattern (see OO)
