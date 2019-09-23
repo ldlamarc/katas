@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RollBonus
   MAX_ROLLS = 1
 
@@ -29,12 +31,10 @@ class RollBonus
     rolls.length >= self.class::MAX_ROLLS
   end
 
-  private
-
   class NoBonus < RollBonus
     MAX_ROLLS = 0
 
-    def bonus_score_for_roll(roll)
+    def bonus_score_for_roll(_roll)
       0
     end
   end
@@ -49,5 +49,5 @@ class RollBonus
     MAX_ROLLS = 2
   end
 
-  class SpareBonus < DoubleScoreBonus ; end
+  class SpareBonus < DoubleScoreBonus; end
 end

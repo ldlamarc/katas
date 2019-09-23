@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Roll
   MIN_PINS = 0
   MAX_PINS = 10
@@ -13,14 +15,12 @@ class Roll
   end
 
   attr_reader :pins
-  attr_accessor :generated_bonus
+  attr_writer :generated_bonus
 
   def initialize(pins)
-    if (MIN_PINS..MAX_PINS).include? pins
-      @pins = pins
-    else
-      fail StandardError.new('not a valid number of pins')
-    end
+    raise 'not a valid number of pins' unless (MIN_PINS..MAX_PINS).include? pins
+
+    @pins = pins
   end
 
   def score
@@ -48,7 +48,11 @@ class Roll
   end
 
   def to_s(frame = Frame.null)
-    "#{strike?(frame) ? 'X' : spare?(frame) ? '/' : pins}"
+    return 'X' if strike?(frame)
+
+    return '/' if spare?(frame)
+
+    pins.to_s
   end
 
   def inspect
@@ -74,8 +78,8 @@ class Roll
       0
     end
 
-    def to_s(frame = Frame.null)
-      "_"
+    def to_s(_frame)
+      '_'
     end
   end
 end

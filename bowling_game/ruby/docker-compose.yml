@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+  kbg-ruby:
+    build: .
+    volumes:
+      - .:/app
+    command: bundle exec guard --no-bundler-warning
+    stdin_open: true
+    tty: true

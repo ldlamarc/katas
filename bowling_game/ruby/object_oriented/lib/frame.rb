@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require 'roll'
+
 class Frame
   MAX_ROLLS = 2
   MAX_PINS = Roll::MAX_PINS
@@ -47,7 +51,7 @@ class Frame
   private
 
   def padded_rolls
-    (@rolls | Array.new(MAX_ROLLS) { |i| Roll.null })[0..MAX_ROLLS - 1] # Pad with no_rolls
+    (@rolls | Array.new(MAX_ROLLS) { Roll.null })[0..MAX_ROLLS - 1] # Pad with no_rolls
   end
 
   def all_pins_down?

@@ -1,0 +1,10 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gem 'fuubar'
+gem 'guard'
+gem 'guard-shell'
+gem 'require_all'
+gem 'rspec'
+gem 'rubocop'

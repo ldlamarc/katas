@@ -1,17 +1,19 @@
+# frozen_string_literal: true
+
 class BowlingGame
   MAX_PINS = 10
   MAX_ROLLS_IN_FRAME = 2
   STRIKE_LOOKAHEAD = 2
   SPARE_LOOKAHEAD = 1
-  BONUS_LOOKAHEADS = [STRIKE_LOOKAHEAD, SPARE_LOOKAHEAD]
+  BONUS_LOOKAHEADS = [STRIKE_LOOKAHEAD, SPARE_LOOKAHEAD].freeze
   MAX_FRAMES = 10
 
-  def self.roll *rolls
+  def self.roll(*rolls)
     new(rolls)
   end
 
   def score
-    map_frame_score { |frame, score| score }.reduce(0, :+)
+    map_frame_score { |_frame, score| score }.reduce(0, :+)
   end
 
   def to_s
@@ -26,7 +28,7 @@ class BowlingGame
     @rolls = rolls
   end
 
-  def map_frame_score(&block)
+  def map_frame_score(&_block)
     padded_frames.each_cons(1 + BONUS_LOOKAHEADS.max).map do |frame, *lookahead_frames|
       yield(frame, frame.score(lookahead_frames))
     end
@@ -34,7 +36,7 @@ class BowlingGame
 
   def padded_frames
     min_length_for_score = MAX_FRAMES + BONUS_LOOKAHEADS.max
-    (frames + Array.new(min_length_for_score){ Frame.from_rolls([]) }).first(min_length_for_score)
+    (frames + Array.new(min_length_for_score) { Frame.from_rolls([]) }).first(min_length_for_score)
   end
 
   def frames
@@ -47,7 +49,7 @@ class BowlingGame
   end
 
   class Frame
-    def self.from_rolls rolls
+    def self.from_rolls(rolls)
       new(rolls)
     end
 
@@ -58,7 +60,7 @@ class BowlingGame
     end
 
     def base_score
-      rolls.reduce(0,:+)
+      rolls.reduce(0, :+)
     end
 
     def score(next_frames = [])
@@ -76,7 +78,7 @@ class BowlingGame
     private
 
     def bonus_score(next_frames)
-      next_frames.flat_map(&:rolls).first(lookahead).reduce(0,:+)
+      next_frames.flat_map(&:rolls).first(lookahead).reduce(0, :+)
     end
 
     def strike?
@@ -88,11 +90,15 @@ class BowlingGame
     end
 
     def all_down?
-      rolls.reduce(0,:+) == MAX_PINS
+      rolls.reduce(0, :+) == MAX_PINS
     end
 
     def lookahead
-      strike? ? STRIKE_LOOKAHEAD : spare? ? SPARE_LOOKAHEAD : 0
+      return STRIKE_LOOKAHEAD if strike?
+
+      return SPARE_LOOKAHEAD if spare?
+
+      0
     end
 
     def padded_roll_strings

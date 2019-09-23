@@ -1,0 +1,22 @@
+# frozen_string_literal: true
+
+guard :shell do
+  watch(%r{(functional)\/(spec|lib)\/.+.rb}) do
+    puts 'Running functional tests'
+    `cd /app/functional; bundle exec rspec`
+  end
+end
+
+guard :shell do
+  watch(%r{(object_oriented)\/(spec|lib)\/.+.rb}) do
+    puts 'Running object oriented tests'
+    `cd /app/object_oriented; bundle exec rspec`
+  end
+end
+
+guard :shell do
+  watch(/.+.rb/) do
+    puts 'Running rubocop'
+    `rubocop`
+  end
+end
