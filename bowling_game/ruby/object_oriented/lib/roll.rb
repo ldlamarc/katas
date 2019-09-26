@@ -5,17 +5,24 @@ class Roll
   MAX_PINS = 10
 
   class << self
-    def from_pins(pins)
+    def strike
+      Strike.new(MAX_PINS)
+    end
+
+    def spare(pins)
+      Spare.new(pins)
+    end
+
+    def normal(pins)
       new(pins)
     end
 
     def null
-      NoRoll.new
+      Null.new(MIN_PINS)
     end
   end
 
   attr_reader :pins
-  attr_writer :generated_bonus
 
   def initialize(pins)
     raise 'not a valid number of pins' unless (MIN_PINS..MAX_PINS).include? pins
@@ -24,34 +31,18 @@ class Roll
   end
 
   def score
-    pins + generated_bonus.bonus_score
+    pins + bonus.score
   end
 
-  def strike?(frame)
-    frame.strike?(self)
+  def spare?
+    false
   end
 
-  def spare?(frame)
-    frame.spare?(self)
+  def strike?
+    false
   end
 
-  def going_to_strike?(frame)
-    frame.no_rolls_made_yet? && brings_all_pins_down?(frame)
-  end
-
-  def going_to_spare?(frame)
-    !frame.no_rolls_made_yet? && brings_all_pins_down?(frame)
-  end
-
-  def max_pins?
-    pins == MAX_PINS
-  end
-
-  def to_s(frame = Frame.null)
-    return 'X' if strike?(frame)
-
-    return '/' if spare?(frame)
-
+  def to_s
     pins.to_s
   end
 
@@ -59,26 +50,40 @@ class Roll
     to_s
   end
 
-  def generated_bonus
-    @generated_bonus || RollBonus.null
+  def bonus
+    @bonus ||= RollBonus.null
   end
 
-  private
+  class Strike < Roll
+    def strike?
+      true
+    end
 
-  def brings_all_pins_down?(frame)
-    frame.pins_down + pins == MAX_PINS
+    def to_s
+      'X'
+    end
+
+    def bonus
+      @bonus ||= RollBonus.strike
+    end
   end
 
-  class NoRoll
-    def pins
-      0
+  class Spare < Roll
+    def spare?
+      true
     end
 
-    def score
-      0
+    def to_s
+      '/'
     end
 
-    def to_s(_frame)
+    def bonus
+      @bonus ||= RollBonus.spare
+    end
+  end
+
+  class Null < Roll
+    def to_s
       '_'
     end
   end

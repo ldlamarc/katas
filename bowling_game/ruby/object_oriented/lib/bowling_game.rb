@@ -3,11 +3,11 @@
 class BowlingGame
   MAX_FRAMES = 10
 
-  attr_accessor :frames, :pending_bonusses
+  attr_reader :frames
 
   def initialize
-    @frames = Array.new(MAX_FRAMES) { Frame.new }
-    @pending_bonusses = []
+    @frames = MAX_FRAMES.times.map { Frame.new }
+    @bonusses = []
   end
 
   def roll(*pins)
@@ -20,6 +20,18 @@ class BowlingGame
     frames.map(&:score).reduce(0, :+)
   end
 
+  def in_progress?
+    frame_in_progress || unused_bonusses.any?
+  end
+
+  def frame_in_progress
+    frames.find(&:in_progress?)
+  end
+
+  def unused_bonusses
+    bonusses.reject(&:used?)
+  end
+
   def to_s
     frames.map(&:to_s).join('::')
   end
@@ -30,40 +42,18 @@ class BowlingGame
 
   private
 
-  def in_progress?
-    frame_in_progress || pending_bonusses.any?
-  end
+  attr_writer :frames
+  attr_accessor :bonusses
 
   def add_roll(pins)
     return unless in_progress?
 
-    new_roll = Roll.from_pins(pins)
-    update_bonusses(new_roll)
-    frame_in_progress&.add_roll(new_roll)
+    roll = frame_in_progress&.knock_down(pins) || bonus_roll(pins)
+    unused_bonusses.map { |bonus| bonus.register(roll) }
+    bonusses << roll.bonus
   end
 
-  def frame_in_progress
-    frames.find(&:in_progress?)
-  end
-
-  def calculate_generated_bonus(frame_in_progress, roll)
-    return RollBonus.strike if roll.going_to_strike?(frame_in_progress)
-
-    return RollBonus.spare if roll.going_to_spare?(frame_in_progress)
-
-    RollBonus.null
-  end
-
-  def applicable_bonusses
-    pending_bonusses.reject(&:maxed?)
-  end
-
-  def update_bonusses(roll)
-    applicable_bonusses.map { |bonus| bonus.rolls << roll }
-    return unless frame_in_progress
-
-    generated_bonus = calculate_generated_bonus(frame_in_progress, roll)
-    roll.generated_bonus = generated_bonus
-    pending_bonusses << generated_bonus
+  def bonus_roll(pins)
+    Roll.normal(pins)
   end
 end

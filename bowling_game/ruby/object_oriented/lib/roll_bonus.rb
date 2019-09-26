@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
 class RollBonus
-  MAX_ROLLS = 1
-
   class << self
     def null
-      NoBonus.new
+      RollBonus.new
     end
 
     def strike
@@ -23,31 +21,29 @@ class RollBonus
     @rolls = []
   end
 
-  def bonus_score
-    rolls.map { |roll| bonus_score_for_roll(roll) }.reduce(0, :+)
+  def register(roll)
+    return if used?
+
+    @rolls << roll
   end
 
-  def maxed?
-    rolls.length >= self.class::MAX_ROLLS
+  def score
+    rolls.map(&:pins).reduce(0, :+)
   end
 
-  class NoBonus < RollBonus
-    MAX_ROLLS = 0
+  def used?
+    @rolls.size >= 0
+  end
 
-    def bonus_score_for_roll(_roll)
-      0
+  class StrikeBonus < RollBonus
+    def used?
+      @rolls.size >= 2
     end
   end
 
-  class DoubleScoreBonus < RollBonus
-    def bonus_score_for_roll(roll)
-      roll.pins
+  class SpareBonus < RollBonus
+    def used?
+      @rolls.size >= 1
     end
   end
-
-  class StrikeBonus < DoubleScoreBonus
-    MAX_ROLLS = 2
-  end
-
-  class SpareBonus < DoubleScoreBonus; end
 end

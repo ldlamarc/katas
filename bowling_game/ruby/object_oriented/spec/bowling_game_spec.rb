@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'require_all'
+require 'byebug'
 require 'spec_helper'
 
 require_all 'lib'

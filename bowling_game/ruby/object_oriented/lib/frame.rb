@@ -12,8 +12,11 @@ class Frame
     @rolls = []
   end
 
-  def add_roll(roll)
-    @rolls << roll
+  def knock_down(pins)
+    return nil unless in_progress?
+
+    @rolls << to_roll(pins)
+    @rolls.last
   end
 
   def score
@@ -21,23 +24,11 @@ class Frame
   end
 
   def in_progress?
-    rolls.length < MAX_ROLLS && !all_pins_down?
-  end
-
-  def strike?(roll)
-    first_registered_roll?(roll) && roll.max_pins?
-  end
-
-  def spare?(roll)
-    all_pins_down? && !first_registered_roll?(roll)
+    rolls.length < MAX_ROLLS && pins_down != MAX_PINS
   end
 
   def to_s
-    "#{score}|#{padded_rolls.map { |roll| roll.to_s(self) }.join(',')}"
-  end
-
-  def no_rolls_made_yet?
-    rolls.empty?
+    "#{score}|#{padded_rolls.join(',')}"
   end
 
   def pins_down
@@ -50,15 +41,13 @@ class Frame
 
   private
 
+  def to_roll(pins)
+    return Roll.normal(pins) if pins + pins_down < MAX_PINS
+
+    rolls.size.zero? ? Roll.strike : Roll.spare(pins)
+  end
+
   def padded_rolls
     (@rolls | Array.new(MAX_ROLLS) { Roll.null })[0..MAX_ROLLS - 1] # Pad with no_rolls
-  end
-
-  def all_pins_down?
-    pins_down == MAX_PINS
-  end
-
-  def first_registered_roll?(roll)
-    rolls.first == roll
   end
 end
