@@ -27,16 +27,12 @@ class Frame
     rolls.length < MAX_ROLLS && pins_down != MAX_PINS
   end
 
-  def to_s
-    "#{score}|#{padded_rolls.join(',')}"
-  end
-
   def pins_down
     rolls.map(&:pins).reduce(0, :+)
   end
 
-  def inspect
-    to_s
+  def to_s
+    "#{score}|#{padded_rolls.join(',')}"
   end
 
   private

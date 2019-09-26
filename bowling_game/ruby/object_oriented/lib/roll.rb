@@ -34,20 +34,8 @@ class Roll
     pins + bonus.score
   end
 
-  def spare?
-    false
-  end
-
-  def strike?
-    false
-  end
-
   def to_s
     pins.to_s
-  end
-
-  def inspect
-    to_s
   end
 
   def bonus
@@ -55,10 +43,6 @@ class Roll
   end
 
   class Strike < Roll
-    def strike?
-      true
-    end
-
     def to_s
       'X'
     end
@@ -69,10 +53,6 @@ class Roll
   end
 
   class Spare < Roll
-    def spare?
-      true
-    end
-
     def to_s
       '/'
     end
