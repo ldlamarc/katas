@@ -22,7 +22,7 @@ class RollBonus
   end
 
   def register(roll)
-    return if used?
+    raise 'Bonus is already used' if used?
 
     @rolls << roll
   end

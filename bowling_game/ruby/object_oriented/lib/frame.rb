@@ -13,7 +13,7 @@ class Frame
   end
 
   def knock_down(pins)
-    return nil unless in_progress?
+    raise 'Frame is finished' unless in_progress?
 
     @rolls << to_roll(pins)
     @rolls.last
