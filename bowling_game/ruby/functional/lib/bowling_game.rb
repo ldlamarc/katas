@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class BowlingGame
+module BowlingGame
   MAX_PINS = 10
   MAX_ROLLS_IN_FRAME = 2
   STRIKE_LOOKAHEAD = 2
@@ -8,111 +8,81 @@ class BowlingGame
   BONUS_LOOKAHEADS = [STRIKE_LOOKAHEAD, SPARE_LOOKAHEAD].freeze
   MAX_FRAMES = 10
 
-  def self.roll(*rolls)
-    new(rolls)
+  # A chunk is a frame + consequent frames affecting bonus
+  # Each chunk can be processed in parallel, for each frame there is a chunk
+
+  def score_bowling_game_rolls(rolls)
+    padded_rolls = pad_rolls(rolls)
+    frames = map_to_frames(padded_rolls)
+    chunks = map_to_chunks(frames)
+    chunks.map { |chunk| chunk_to_score(chunk) }.sum(&:to_i)
   end
 
-  def score
-    map_frame_score { |_frame, score| score }.reduce(0, :+)
-  end
-
-  def to_s
-    map_frame_score { |frame, score| frame.to_s(score) }.join('::')
+  def to_s_bowling_game_rolls(rolls)
+    padded_rolls = pad_rolls(rolls)
+    frames = map_to_frames(padded_rolls)
+    chunks = map_to_chunks(frames)
+    chunks.map { |chunk| chunk_to_s(chunk) }.join('::')
   end
 
   private
 
-  attr_reader :rolls
-
-  def initialize(rolls)
-    @rolls = rolls
+  def pad_rolls(rolls)
+    max_rolls = MAX_FRAMES * MAX_ROLLS_IN_FRAME + BONUS_LOOKAHEADS.max
+    pad(rolls, nil, max_rolls)
   end
 
-  def map_frame_score(&_block)
-    padded_frames.each_cons(1 + BONUS_LOOKAHEADS.max).map do |frame, *lookahead_frames|
-      yield(frame, frame.score(lookahead_frames))
-    end
+  def pad(array, pad_value, length)
+    (array + Array.new(length) { pad_value }).first(length)
   end
 
-  def padded_frames
-    min_length_for_score = MAX_FRAMES + BONUS_LOOKAHEADS.max
-    (frames + Array.new(min_length_for_score) { Frame.from_rolls([]) }).first(min_length_for_score)
+  def map_to_frames(rolls)
+    # A new frame always begins after a MAX_PINS roll
+    rolls.slice_after(MAX_PINS).map do |el|
+      # A new frame begins after MAX_ROLLS_IN_FRAME number of rolls
+      el.each_slice(MAX_ROLLS_IN_FRAME).to_a
+    end.flatten(1).first(MAX_FRAMES + BONUS_LOOKAHEADS.max)
   end
 
-  def frames
-    split_rolls_in_frames.map { |rolls| Frame.from_rolls(rolls) }
+  # A chunk is a frame + consequent frames affecting bonus
+  # Each chunk can be processed in parallel
+  def map_to_chunks(frames)
+    frames.each_cons(1 + BONUS_LOOKAHEADS.max).to_a
   end
 
-  # A frame ends after MAX_PINS or MAX_ROLLS_IN_FRAME
-  def split_rolls_in_frames
-    rolls.slice_after(MAX_PINS).map { |el| el.each_slice(MAX_ROLLS_IN_FRAME).to_a }.flatten(1)
+  def chunk_to_score(chunk)
+    frame = chunk[0]
+    frame.sum(&:to_i) + bonus_score(chunk)
   end
 
-  class Frame
-    def self.from_rolls(rolls)
-      new(rolls)
-    end
+  def chunk_to_s(chunk)
+    "#{chunk_to_score(chunk)}|#{frame_roll_strings(chunk[0]).join(',')}"
+  end
 
-    attr_reader :rolls
+  def frame_roll_strings(frame)
+    return pad(['X'], '_', MAX_ROLLS_IN_FRAME) if strike?(frame)
 
-    def initialize(rolls)
-      @rolls = rolls
-    end
+    rolls = frame.map { |roll| roll ? roll.to_s : '_' }
+    spare?(frame) ? pad(rolls[0..-2], '/', MAX_ROLLS_IN_FRAME) : rolls
+  end
 
-    def base_score
-      rolls.reduce(0, :+)
-    end
+  def bonus?(frame)
+    frame.sum(&:to_i) == MAX_PINS
+  end
 
-    def score(next_frames = [])
-      base_score + bonus_score(next_frames)
-    end
+  def strike?(frame)
+    bonus?(frame) && frame.size == 1
+  end
 
-    def to_s(final_frame_score)
-      "#{final_frame_score}|#{rolls_string}"
-    end
+  def spare?(frame)
+    bonus?(frame) && frame.size > 1
+  end
 
-    def inspect
-      padded_roll_strings.join(',')
-    end
+  def bonus_score(chunk)
+    frame = chunk[0]
+    return 0 unless bonus?(frame)
 
-    private
-
-    def bonus_score(next_frames)
-      next_frames.flat_map(&:rolls).first(lookahead).reduce(0, :+)
-    end
-
-    def strike?
-      rolls.length == 1 && all_down?
-    end
-
-    def spare?
-      rolls.length == MAX_ROLLS_IN_FRAME && all_down?
-    end
-
-    def all_down?
-      rolls.reduce(0, :+) == MAX_PINS
-    end
-
-    def lookahead
-      return STRIKE_LOOKAHEAD if strike?
-
-      return SPARE_LOOKAHEAD if spare?
-
-      0
-    end
-
-    def padded_roll_strings
-      (rolls + Array.new(MAX_ROLLS_IN_FRAME) { '_' }).first(MAX_ROLLS_IN_FRAME)
-    end
-
-    def rolls_string
-      if strike?
-        'X,_'
-      elsif spare?
-        "#{rolls[0]},/"
-      else
-        padded_roll_strings.join(',')
-      end
-    end
+    lookahead = strike?(frame) ? STRIKE_LOOKAHEAD : SPARE_LOOKAHEAD
+    chunk.drop(1).flatten.first(lookahead).sum(&:to_i)
   end
 end

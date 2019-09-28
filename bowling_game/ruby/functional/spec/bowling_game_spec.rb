@@ -6,7 +6,9 @@ require_all 'lib'
 
 describe BowlingGame do
   describe '#score' do
-    subject { BowlingGame.roll(*rolls).score }
+    include BowlingGame
+
+    subject { score_bowling_game_rolls(rolls) }
 
     context 'a new game' do
       let(:rolls) { [] }
@@ -60,7 +62,9 @@ describe BowlingGame do
   end
 
   describe '#to_s' do
-    subject { BowlingGame.roll(*rolls).to_s }
+    include BowlingGame
+
+    subject { to_s_bowling_game_rolls(rolls) }
 
     context 'rolling 0-spare-strike-2' do
       let(:rolls) { [0, 10, 10, 2] }
