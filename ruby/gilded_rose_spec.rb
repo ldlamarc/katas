@@ -43,6 +43,15 @@ describe GildedRose do
         end
       end
 
+      context 'at quality 1 and expired' do
+        let(:quality) { 1 }
+        let(:sell_in) { 0 }
+
+        it 'does not decrease quality below 0' do
+          expect(item.quality).to eq 0
+        end
+      end
+
       context 'conjured' do
         let(:name) { 'Conjured Mana Cake' }
 

@@ -56,14 +56,21 @@ class ItemUpdater < SimpleDelegator
       else
         decrease_quality
       end
+
+      cutoff
     end
 
     def increase_quality
-      self.quality += quality_increment unless max_quality?
+      self.quality += quality_increment
     end
 
     def decrease_quality
-      self.quality -= quality_increment if quality.positive?
+      self.quality -= quality_increment
+    end
+
+    def cutoff
+      self.quality = 0 if quality.negative?
+      self.quality = 50 if max_quality?
     end
 
     def decrease_sell_in
