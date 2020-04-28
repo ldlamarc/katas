@@ -21,19 +21,17 @@ class ItemUpdater < SimpleDelegator
   end
 
   def hot?
-    sell_in < 10
+    hot_item? && sell_in < 10
   end
 
   def very_hot?
-    sell_in < 5
+    hot_item? && sell_in < 5
   end
 
   def quality_increment
     increment = expired? ? 2 : 1
-    if backstage_pass?
-      increment += 1 if hot?
-      increment += 1 if very_hot?
-    end
+    increment += 1 if hot?
+    increment += 1 if very_hot?
     # Assumption that appreciating items also appreciate faster if conjured
     # rationale: Brie also appreciates faster if expired
     increment *= 2 if conjured?
@@ -41,19 +39,19 @@ class ItemUpdater < SimpleDelegator
   end
 
   def update_state
-    return if sulfuras?
+    return if legendary?
 
     decrease_sell_in
     update_quality
   end
 
   def update_quality
-    if backstage_pass? && expired?
+    if hot_item? && expired?
       self.quality = 0
       return
     end
 
-    if aged_brie? or backstage_pass?
+    if appreciating?
       increase_quality
     else
       decrease_quality
@@ -76,16 +74,16 @@ class ItemUpdater < SimpleDelegator
     name.start_with?("Conjured")
   end
 
-  def aged_brie?
-    name == "Aged Brie"
+  def appreciating?
+    ["Aged Brie"].include?(name) || hot_item?
   end
 
-  def backstage_pass?
-    name == "Backstage passes to a TAFKAL80ETC concert"
+  def hot_item?
+    name.start_with?("Backstage")
   end
 
-  def sulfuras?
-    name == "Sulfuras, Hand of Ragnaros"
+  def legendary?
+    ["Sulfuras, Hand of Ragnaros"].include? name
   end
 end
 
