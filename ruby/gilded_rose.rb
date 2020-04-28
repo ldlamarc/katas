@@ -48,21 +48,12 @@ class ItemUpdater < SimpleDelegator
     end
 
     def update_quality
-      if appreciating?
-        increase_quality
-      else
-        decrease_quality
-      end
+      increment = quality_increment
+      increment *= -1 unless appreciating?
+
+      self.quality += increment
 
       cutoff
-    end
-
-    def increase_quality
-      self.quality += quality_increment
-    end
-
-    def decrease_quality
-      self.quality -= quality_increment
     end
 
     def cutoff
