@@ -8,46 +8,32 @@ class GildedRose
       item =  ItemUpdater.new(base_item)
 
       unless item.aged_brie? or item.backstage_pass?
-        if item.quality > 0
-          unless item.sulfuras?
-            item.quality = item.quality - 1
-          end
-        end
+        item.decrease_quality
       else
         unless item.max_quality?
-          item.quality = item.quality + 1
+          item.increase_quality
           if item.backstage_pass?
             if item.sell_in < 11
-              unless item.max_quality?
-                item.quality = item.quality + 1
-              end
+              item.increase_quality
             end
             if item.sell_in < 6
-              unless item.max_quality?
-                item.quality = item.quality + 1
-              end
+              item.increase_quality
             end
           end
         end
       end
       unless item.sulfuras?
-        item.sell_in = item.sell_in - 1
+        item.decrease_sell_in
       end
       if item.expired?
         unless item.aged_brie?
           unless item.backstage_pass?
-            if item.quality > 0
-              unless item.sulfuras?
-                item.quality = item.quality - 1
-              end
-            end
+            item.decrease_quality
           else
-            item.quality = item.quality - item.quality
+            item.quality = 0
           end
         else
-          unless item.max_quality?
-            item.quality = item.quality + 1
-          end
+          item.increase_quality
         end
       end
     end
@@ -61,6 +47,18 @@ class ItemUpdater < SimpleDelegator
 
   def expired?
     sell_in < 0
+  end
+
+  def increase_quality
+    self.quality += 1 unless max_quality?
+  end
+
+  def decrease_quality
+    self.quality -= 1 unless sulfuras? || quality <= 0
+  end
+
+  def decrease_sell_in
+    self.sell_in -= 1
   end
 
   def aged_brie?
