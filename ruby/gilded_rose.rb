@@ -12,17 +12,7 @@ class GildedRose
       unless item.aged_brie? or item.backstage_pass?
         item.decrease_quality
       else
-        unless item.max_quality?
-          item.increase_quality
-          if item.backstage_pass?
-            if item.sell_in < 10
-              item.increase_quality
-            end
-            if item.sell_in < 5
-              item.increase_quality
-            end
-          end
-        end
+        item.increase_quality
       end
 
       if item.backstage_pass? && item.expired?
@@ -41,8 +31,19 @@ class ItemUpdater < SimpleDelegator
     sell_in < 0
   end
 
+  def hot?
+    sell_in < 10
+  end
+
+  def very_hot?
+    sell_in < 5
+  end
+
   def quality_increment
-    expired? ? 2 : 1
+    increment = expired? ? 2 : 1
+    increment += 1 if hot? && backstage_pass?
+    increment += 1 if very_hot? && backstage_pass?
+    increment
   end
 
   def increase_quality
