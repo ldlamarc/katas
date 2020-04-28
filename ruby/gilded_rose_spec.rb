@@ -42,6 +42,14 @@ describe GildedRose do
           expect(item.quality).to eq 0
         end
       end
+
+      context 'conjured' do
+        let(:name) { 'Conjured Mana Cake' }
+
+        it 'lowers quality by 2' do
+          expect(item.quality).to eq 38
+        end
+      end
     end
 
     context 'on Aged Brie' do

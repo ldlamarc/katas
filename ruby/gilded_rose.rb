@@ -34,6 +34,9 @@ class ItemUpdater < SimpleDelegator
       increment += 1 if hot?
       increment += 1 if very_hot?
     end
+    # Assumption that appreciating items also appreciate faster if conjured
+    # rationale: Brie also appreciates faster if expired
+    increment *= 2 if conjured?
     increment
   end
 
@@ -67,6 +70,10 @@ class ItemUpdater < SimpleDelegator
 
   def decrease_sell_in
     self.sell_in -= 1
+  end
+
+  def conjured?
+    name.start_with?("Conjured")
   end
 
   def aged_brie?
