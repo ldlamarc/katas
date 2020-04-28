@@ -29,18 +29,16 @@ class ItemUpdater < SimpleDelegator
       sell_in < 0
     end
 
-    def hot?
-      hot_item? && sell_in < 10
-    end
+    def hotness_increment
+      return 0 unless hot_item?
+      return 2 if sell_in < 5
 
-    def very_hot?
-      hot_item? && sell_in < 5
+      sell_in < 10 ? 1 : 0
     end
 
     def quality_increment
       increment = expired? ? 2 : 1
-      increment += 1 if hot?
-      increment += 1 if very_hot?
+      increment += hotness_increment
       # Assumption that appreciating items also appreciate faster if conjured
       # rationale: Brie also appreciates faster if expired
       increment *= 2 if conjured?
