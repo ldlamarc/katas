@@ -1,42 +1,41 @@
 class GildedRose
-
   def initialize(items)
     @items = items
   end
 
-  def update_quality()
+  def update_quality
     @items.each do |item|
-      if item.name != "Aged Brie" and item.name != "Backstage passes to a TAFKAL80ETC concert"
+      unless aged_brie?(item) or backstage_pass?(item)
         if item.quality > 0
-          if item.name != "Sulfuras, Hand of Ragnaros"
+          unless sulfuras?(item)
             item.quality = item.quality - 1
           end
         end
       else
-        if item.quality < 50
+        unless max_quality?(item)
           item.quality = item.quality + 1
-          if item.name == "Backstage passes to a TAFKAL80ETC concert"
+          if backstage_pass?(item)
             if item.sell_in < 11
-              if item.quality < 50
+              unless max_quality?(item)
                 item.quality = item.quality + 1
               end
             end
             if item.sell_in < 6
-              if item.quality < 50
+              unless max_quality?(item)
                 item.quality = item.quality + 1
               end
             end
           end
         end
       end
-      if item.name != "Sulfuras, Hand of Ragnaros"
+      unless sulfuras?(item)
         item.sell_in = item.sell_in - 1
       end
-      if item.sell_in < 0
-        if item.name != "Aged Brie"
-          if item.name != "Backstage passes to a TAFKAL80ETC concert"
+      if expired?(item)
+        unless aged_brie?(item)
+          unless backstage_pass?(item)
             if item.quality > 0
-              if item.name != "Sulfuras, Hand of Ragnaros"
+              unless sulfuras?(item)
                 item.quality = item.quality - 1
               end
             end
@@ -44,13 +43,33 @@ class GildedRose
             item.quality = item.quality - item.quality
           end
         else
-          if item.quality < 50
+          unless max_quality?(item)
             item.quality = item.quality + 1
           end
         end
       end
     end
   end
+end
+
+def max_quality?(item)
+  item.quality >= 50
+end
+
+def expired?(item)
+  item.sell_in < 0
+end
+
+def aged_brie?(item)
+  item.name == "Aged Brie"
+end
+
+def backstage_pass?(item)
+  item.name == "Backstage passes to a TAFKAL80ETC concert"
+end
+
+def sulfuras?(item)
+  item.name == "Sulfuras, Hand of Ragnaros"
 end
 
 class Item
