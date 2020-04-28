@@ -6,8 +6,7 @@ class GildedRose
   def update_quality
     @items.each do |base_item|
       item =  ItemUpdater.new(base_item)
-      item.decrease_sell_in
-      item.update_quality
+      item.update_state
     end
   end
 end
@@ -31,9 +30,18 @@ class ItemUpdater < SimpleDelegator
 
   def quality_increment
     increment = expired? ? 2 : 1
-    increment += 1 if hot? && backstage_pass?
-    increment += 1 if very_hot? && backstage_pass?
+    if backstage_pass?
+      increment += 1 if hot?
+      increment += 1 if very_hot?
+    end
     increment
+  end
+
+  def update_state
+    return if sulfuras?
+
+    decrease_sell_in
+    update_quality
   end
 
   def update_quality
@@ -54,14 +62,10 @@ class ItemUpdater < SimpleDelegator
   end
 
   def decrease_quality
-    return if sulfuras?
-
     self.quality -= quality_increment if quality.positive?
   end
 
   def decrease_sell_in
-    return if sulfuras?
-
     self.sell_in -= 1
   end
 
