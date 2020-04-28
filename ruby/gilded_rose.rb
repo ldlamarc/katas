@@ -24,16 +24,9 @@ class GildedRose
           end
         end
       end
-      if item.expired?
-        unless item.aged_brie?
-          unless item.backstage_pass?
-            item.decrease_quality
-          else
-            item.quality = 0
-          end
-        else
-          item.increase_quality
-        end
+
+      if item.backstage_pass? && item.expired?
+        item.quality = 0
       end
     end
   end
@@ -48,12 +41,18 @@ class ItemUpdater < SimpleDelegator
     sell_in < 0
   end
 
+  def quality_increment
+    expired? ? 2 : 1
+  end
+
   def increase_quality
-    self.quality += 1 unless max_quality?
+    self.quality += quality_increment unless max_quality?
   end
 
   def decrease_quality
-    self.quality -= 1 unless sulfuras? || quality <= 0
+    return if sulfuras?
+
+    self.quality -= quality_increment if quality.positive?
   end
 
   def decrease_sell_in
