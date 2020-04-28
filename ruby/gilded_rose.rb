@@ -37,6 +37,8 @@ class ItemUpdater < SimpleDelegator
     end
 
     def quality_increment
+      return -quality if hot_item? && expired?
+
       increment = expired? ? 2 : 1
       increment += hotness_increment
       # Assumption that appreciating items also appreciate faster if conjured
@@ -46,11 +48,6 @@ class ItemUpdater < SimpleDelegator
     end
 
     def update_quality
-      if hot_item? && expired?
-        self.quality = 0
-        return
-      end
-
       if appreciating?
         increase_quality
       else
