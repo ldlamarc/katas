@@ -4,38 +4,40 @@ class GildedRose
   end
 
   def update_quality
-    @items.each do |item|
-      unless aged_brie?(item) or backstage_pass?(item)
+    @items.each do |base_item|
+      item =  ItemUpdater.new(base_item)
+
+      unless item.aged_brie? or item.backstage_pass?
         if item.quality > 0
-          unless sulfuras?(item)
+          unless item.sulfuras?
             item.quality = item.quality - 1
           end
         end
       else
-        unless max_quality?(item)
+        unless item.max_quality?
           item.quality = item.quality + 1
-          if backstage_pass?(item)
+          if item.backstage_pass?
             if item.sell_in < 11
-              unless max_quality?(item)
+              unless item.max_quality?
                 item.quality = item.quality + 1
               end
             end
             if item.sell_in < 6
-              unless max_quality?(item)
+              unless item.max_quality?
                 item.quality = item.quality + 1
               end
             end
           end
         end
       end
-      unless sulfuras?(item)
+      unless item.sulfuras?
         item.sell_in = item.sell_in - 1
       end
-      if expired?(item)
-        unless aged_brie?(item)
-          unless backstage_pass?(item)
+      if item.expired?
+        unless item.aged_brie?
+          unless item.backstage_pass?
             if item.quality > 0
-              unless sulfuras?(item)
+              unless item.sulfuras?
                 item.quality = item.quality - 1
               end
             end
@@ -43,7 +45,7 @@ class GildedRose
             item.quality = item.quality - item.quality
           end
         else
-          unless max_quality?(item)
+          unless item.max_quality?
             item.quality = item.quality + 1
           end
         end
@@ -52,24 +54,26 @@ class GildedRose
   end
 end
 
-def max_quality?(item)
-  item.quality >= 50
-end
+class ItemUpdater < SimpleDelegator
+  def max_quality?
+    quality >= 50
+  end
 
-def expired?(item)
-  item.sell_in < 0
-end
+  def expired?
+    sell_in < 0
+  end
 
-def aged_brie?(item)
-  item.name == "Aged Brie"
-end
+  def aged_brie?
+    name == "Aged Brie"
+  end
 
-def backstage_pass?(item)
-  item.name == "Backstage passes to a TAFKAL80ETC concert"
-end
+  def backstage_pass?
+    name == "Backstage passes to a TAFKAL80ETC concert"
+  end
 
-def sulfuras?(item)
-  item.name == "Sulfuras, Hand of Ragnaros"
+  def sulfuras?
+    name == "Sulfuras, Hand of Ragnaros"
+  end
 end
 
 class Item
