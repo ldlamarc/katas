@@ -7,23 +7,22 @@ class GildedRose
     @items.each do |base_item|
       item =  ItemUpdater.new(base_item)
 
+      item.decrease_sell_in
+
       unless item.aged_brie? or item.backstage_pass?
         item.decrease_quality
       else
         unless item.max_quality?
           item.increase_quality
           if item.backstage_pass?
-            if item.sell_in < 11
+            if item.sell_in < 10
               item.increase_quality
             end
-            if item.sell_in < 6
+            if item.sell_in < 5
               item.increase_quality
             end
           end
         end
-      end
-      unless item.sulfuras?
-        item.decrease_sell_in
       end
       if item.expired?
         unless item.aged_brie?
@@ -58,6 +57,8 @@ class ItemUpdater < SimpleDelegator
   end
 
   def decrease_sell_in
+    return if sulfuras?
+
     self.sell_in -= 1
   end
 
