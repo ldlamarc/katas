@@ -1,2 +1,3 @@
 # katas
-A collection of katas in different styles and languages.
+
+A collection of katas/code challenges in different styles and languages.
