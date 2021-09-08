@@ -10,6 +10,10 @@ class Challenge
     in_content.split("\n")[1..-1]
   end
 
+  def focus
+    nil
+  end
+
   def outputs
     raise "Implement in subclass"
   end
